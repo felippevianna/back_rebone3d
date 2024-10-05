@@ -3,6 +3,9 @@ package com.tcc.rebone_3d.Models;
 import java.util.Date;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 import lombok.Getter;
@@ -34,6 +37,7 @@ public class Paciente {
     private String bairro;
 
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
+    @JsonBackReference
     private List<Historico> historicos;
 
     public Paciente() {}

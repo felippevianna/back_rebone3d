@@ -3,6 +3,8 @@ package com.tcc.rebone_3d.Models;
 import jakarta.persistence.*;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +22,7 @@ public class Historico {
 
     @ManyToOne
     @JoinColumn(name = "paciente_id")
+    @JsonManagedReference
     private Paciente paciente;
 
     public Historico() {}

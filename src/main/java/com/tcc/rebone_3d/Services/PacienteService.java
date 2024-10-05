@@ -18,6 +18,7 @@ public class PacienteService {
     // Listar todos os pacientes
     public List<Paciente> listarTodos() {
         return pacienteRepository.findAll();
+
     }
 
     // Buscar paciente por ID
