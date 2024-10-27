@@ -4,9 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.tcc.rebone_3d.DTO.PacienteDTO;
 import com.tcc.rebone_3d.Models.Paciente;
+import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Repositories.PacienteRepository;
 
 @Service
@@ -16,8 +20,8 @@ public class PacienteService {
     private PacienteRepository pacienteRepository;
 
     // Listar todos os pacientes
-    public List<Paciente> listarTodos() {
-        return pacienteRepository.findAll();
+    public List<Paciente> listarTodos(Usuario usuario) {
+        return pacienteRepository.findByUsuarioResponsavel(usuario);
 
     }
 
@@ -27,7 +31,13 @@ public class PacienteService {
     }
 
     // Cadastrar um novo paciente
-    public Paciente cadastrar(Paciente paciente) {
+    public Paciente cadastrar(PacienteDTO pacienteDTO) { 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        
+        Paciente paciente = pacienteDTO.toPacienteModel();
+        paciente.setUsuarioResponsavel(usuarioLogado);
+
         return pacienteRepository.save(paciente);
     }
 
@@ -52,6 +62,15 @@ public class PacienteService {
     // Deletar paciente
     public void deletar(Long id) {
         pacienteRepository.deleteById(id);
+    }
+
+    public boolean PacientePodeSerAlteradoPeloUsario (Long id, Usuario usuarioLogado){
+        Paciente paciente = pacienteRepository.findByIdAndUsuarioResponsavel(id, usuarioLogado);
+        if (paciente == null) {
+            return false; // Não encontrado ou sem permissão
+        } {
+            return true;
+        }
     }
 }
 

@@ -7,6 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tcc.rebone_3d.Models.Enum.Perfil;
 
 import jakarta.persistence.*;
@@ -27,6 +29,7 @@ public class Usuario implements UserDetails{
     private Long id;
 
     private String username;
+    @JsonIgnore
     private String password;
     private Perfil perfil;
 
@@ -36,6 +39,11 @@ public class Usuario implements UserDetails{
         this.password = senha;
         this.perfil = perfil;
     }
+
+    
+    @OneToMany(mappedBy = "usuarioResponsavel", cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<Paciente> pacientes;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

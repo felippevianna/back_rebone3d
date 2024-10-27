@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 
@@ -39,6 +40,11 @@ public class Paciente {
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
     @JsonBackReference
     private List<Historico> historicos;
+
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    @JsonManagedReference
+    private Usuario usuarioResponsavel;
 
     public Paciente() {}
 
