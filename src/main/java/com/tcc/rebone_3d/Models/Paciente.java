@@ -46,6 +46,10 @@ public class Paciente {
     @JsonManagedReference
     private Usuario usuarioResponsavel;
 
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<Imagem> imagens;
+
     public Paciente() {}
 
     public Paciente(String nome, String email, String cpf, String telefone, Date dataNascimento,

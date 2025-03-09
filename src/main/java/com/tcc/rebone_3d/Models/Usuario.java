@@ -45,6 +45,10 @@ public class Usuario implements UserDetails{
     @JsonBackReference
     private List<Paciente> pacientes;
 
+    @OneToMany(mappedBy = "profissional", cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<Imagem> imagens;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if(this.perfil == Perfil.ADMIN) {

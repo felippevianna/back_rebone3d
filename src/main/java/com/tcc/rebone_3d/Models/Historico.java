@@ -2,7 +2,9 @@ package com.tcc.rebone_3d.Models;
 
 import jakarta.persistence.*;
 import java.util.Date;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
@@ -24,6 +26,10 @@ public class Historico {
     @JoinColumn(name = "paciente_id")
     @JsonManagedReference
     private Paciente paciente;
+
+    @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    private List<Imagem> imagens; // Lista de imagens vinculadas ao histórico
 
     public Historico() {}
 

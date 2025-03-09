@@ -2,25 +2,37 @@ package com.tcc.rebone_3d.Controllers;
 
 import com.tcc.rebone_3d.DTO.HistoricoDTO;
 import com.tcc.rebone_3d.Models.Historico;
+import com.tcc.rebone_3d.Models.Imagem;
 import com.tcc.rebone_3d.Models.Paciente;
 import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Repositories.HistoricoRepository;
 import com.tcc.rebone_3d.Repositories.PacienteRepository;
 import com.tcc.rebone_3d.Services.HistoricoService;
 
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;  
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/historicos")
 public class HistoricoController {
+    @Value("${app.upload.dir}")
+    private String UPLOAD_DIR;
 
     @Autowired
     private HistoricoRepository historicoRepository;
@@ -62,28 +74,80 @@ public class HistoricoController {
     }
 
     // Endpoint para criar um novo histórico
-    @PostMapping
-    public ResponseEntity<Historico> createHistorico(@RequestBody HistoricoDTO historicoDto) {
-        if (historicoDto.idPaciente() == null || historicoDto.data() == null) {
-            return ResponseEntity.badRequest().build();
-        }
+@PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE })
+public ResponseEntity<Historico> createHistorico(
+        @RequestPart("historico") HistoricoDTO historicoDto,
+        @RequestPart("imagens") List<MultipartFile> imagens) {
 
-        // Verifica se o paciente existe
-        Optional<Paciente> pacienteOptional = pacienteRepository.findById(historicoDto.idPaciente());
-        if (!pacienteOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-
-        Historico historico = new Historico();
-        // Define o paciente no histórico
-        historico.setPaciente(pacienteOptional.get());
-        historico.setData(historicoDto.data());
-        historico.setDescricao(historicoDto.descricao());
-
-        // Salva o histórico
-        Historico novoHistorico = historicoRepository.save(historico);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoHistorico);
+    // Validação dos campos obrigatórios
+    if (historicoDto.idPaciente() == null || historicoDto.data() == null) {
+        return ResponseEntity.badRequest().build();
     }
+
+    // Verifica se o paciente existe
+    Optional<Paciente> pacienteOptional = pacienteRepository.findById(historicoDto.idPaciente());
+    if (!pacienteOptional.isPresent()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+
+    // Obtém o profissional logado
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Usuario profissional = (Usuario) authentication.getPrincipal();
+
+    // Cria o histórico
+    Historico historico = new Historico();
+    historico.setPaciente(pacienteOptional.get());
+    historico.setData(historicoDto.data());
+    historico.setDescricao(historicoDto.descricao());
+
+    // Salva o histórico para gerar o ID
+    Historico novoHistorico = historicoRepository.save(historico);
+
+    // Lista para armazenar as imagens
+    List<Imagem> imagensSalvas = new ArrayList<>();
+
+    // Processa cada imagem
+    for (MultipartFile arquivo : imagens) {
+        if (!arquivo.isEmpty()) {
+            // Gera o nome do arquivo: ID do histórico + timestamp
+            String nomeArquivo = novoHistorico.getId() + "_" + System.currentTimeMillis() + ".png";
+
+            // Define o caminho da pasta: uploads/{idPaciente}/
+            String caminhoPasta = UPLOAD_DIR + historicoDto.idPaciente() + "/";
+            String caminhoArquivo = caminhoPasta + nomeArquivo;
+
+            // Salva o arquivo no diretório
+            try {
+                Path path = Paths.get(caminhoArquivo);
+                Files.createDirectories(path.getParent()); // Cria a pasta se não existir
+                Files.write(path, arquivo.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+
+            // Cria a entidade Imagem
+            Imagem imagem = new Imagem();
+            imagem.setCaminhoArquivo(caminhoArquivo);
+            imagem.setDataUpload(new Date());
+            imagem.setHistorico(novoHistorico);
+            imagem.setProfissional(profissional);
+            imagem.setPaciente(pacienteOptional.get());
+
+            // Adiciona à lista de imagens
+            imagensSalvas.add(imagem);
+        }
+    }
+
+    // Vincula as imagens ao histórico
+    novoHistorico.setImagens(imagensSalvas);
+
+    // Salva o histórico atualizado
+    historicoRepository.save(novoHistorico);
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(novoHistorico);
+}
+
 
     // Endpoint para atualizar um histórico existente
     @PutMapping("/{id}")
