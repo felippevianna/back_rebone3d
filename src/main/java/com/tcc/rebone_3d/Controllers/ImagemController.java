@@ -1,19 +1,5 @@
 package com.tcc.rebone_3d.Controllers;
 
-import com.tcc.rebone_3d.Models.Imagem;
-import com.tcc.rebone_3d.Models.Paciente;
-import com.tcc.rebone_3d.Models.Usuario;
-import com.tcc.rebone_3d.Repositories.ImagemRepository;
-import com.tcc.rebone_3d.Repositories.PacienteRepository;
-import com.tcc.rebone_3d.Repositories.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,6 +7,28 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.tcc.rebone_3d.Models.Imagem;
+import com.tcc.rebone_3d.Models.Paciente;
+import com.tcc.rebone_3d.Models.Usuario;
+import com.tcc.rebone_3d.Repositories.ImagemRepository;
+import com.tcc.rebone_3d.Repositories.PacienteRepository;
+import com.tcc.rebone_3d.Repositories.UsuarioRepository;
+
+// Alterar o nome desse controller, para 'Arquivos'
 
 @RestController
 @RequestMapping("/api/imagens")
