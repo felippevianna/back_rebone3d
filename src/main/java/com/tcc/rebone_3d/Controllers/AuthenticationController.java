@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tcc.rebone_3d.DTO.AuthenticationDTO;
 import com.tcc.rebone_3d.DTO.LoginResponseDTO;
 import com.tcc.rebone_3d.DTO.RegisterDTO;
+import com.tcc.rebone_3d.DTO.UserInfoDTO;
 import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Repositories.UsuarioRepository;
 import com.tcc.rebone_3d.Security.TokenService;
@@ -46,7 +49,7 @@ public class AuthenticationController {
         if (this.repository.findByUsername(data.username()) != null)
             return ResponseEntity.badRequest().build();
 
-        // TODO: adicionar email ao campo de usuário e permitir 
+        // TODO: adicionar email ao campo de usuário 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
         
         // Cria um novo usuário
@@ -58,5 +61,17 @@ public class AuthenticationController {
         this.repository.save(newUser);
 
         return ResponseEntity.ok().build();
+    }
+
+    // Novo endpoint para obter informações do usuário
+    @GetMapping("/user-info")
+    public ResponseEntity<UserInfoDTO> userInfo(Authentication authentication) {
+        // Obtém o usuário autenticado a partir do contexto de segurança
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+
+        // Cria um DTO com as informações do usuário
+        UserInfoDTO userInfo = new UserInfoDTO(usuario.getUsername(), usuario.getPerfil());
+
+        return ResponseEntity.ok(userInfo);
     }
 }
