@@ -21,10 +21,13 @@ import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Repositories.UsuarioRepository;
 import com.tcc.rebone_3d.Security.TokenService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Autenticação", description = "Cadastro e Login de usuário")
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 public class AuthenticationController {
     @Autowired
@@ -35,6 +38,7 @@ public class AuthenticationController {
     private TokenService tokenService;
 
     @PostMapping("/login")
+    @Operation(summary = "Login de Usuário", description = "Realiza o login do usuário")
     public ResponseEntity login(@RequestBody @Valid AuthenticationDTO data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
@@ -45,6 +49,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Cadastro de Usuário", description = "Realiza o cadastro de um novo usuário")
     public ResponseEntity register(@RequestBody @Valid RegisterDTO data) {
         if (this.repository.findByUsername(data.username()) != null)
             return ResponseEntity.badRequest().build();
@@ -65,6 +70,7 @@ public class AuthenticationController {
 
     // Novo endpoint para obter informações do usuário
     @GetMapping("/user-info")
+    @Operation(summary = "Obter informações do usuário logado", description = "Retorna as informações adicionais do usuário logado - ainda não está finalizada")
     public ResponseEntity<UserInfoDTO> userInfo(Authentication authentication) {
         // Obtém o usuário autenticado a partir do contexto de segurança
         Usuario usuario = (Usuario) authentication.getPrincipal();

@@ -11,7 +11,12 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tcc.rebone_3d.Models.Enum.Perfil;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,8 +34,10 @@ public class Usuario implements UserDetails{
     private Long id;
 
     private String username;
+    
     @JsonIgnore
     private String password;
+    
     private Perfil perfil;
 
     // Construtor com parâmetros
