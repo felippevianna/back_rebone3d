@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class Imagem {
+public class Arquivo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,9 +35,9 @@ public class Imagem {
     @JoinColumn(name = "paciente_id")
     private Paciente paciente;     // Paciente vinculado à imagem
 
-    public Imagem() {}
+    public Arquivo() {}
 
-    public Imagem(String caminhoArquivo, Date dataUpload, Usuario profissional, Historico historico, Paciente paciente) {
+    public Arquivo(String caminhoArquivo, Date dataUpload, Usuario profissional, Historico historico, Paciente paciente) {
         this.caminhoArquivo = caminhoArquivo;
         this.dataUpload = dataUpload;
         this.profissional = profissional;

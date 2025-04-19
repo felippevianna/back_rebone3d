@@ -1,4 +1,4 @@
-package com.tcc.rebone_3d.DTO;
+package com.tcc.rebone_3d.DTO.Solicitacao;
 
 import com.tcc.rebone_3d.Models.Solicitacao;
 import com.tcc.rebone_3d.Models.Usuario;

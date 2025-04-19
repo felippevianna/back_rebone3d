@@ -48,7 +48,7 @@ public class Paciente {
 
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
     @JsonBackReference
-    private List<Imagem> imagens;
+    private List<Arquivo> imagens;
 
     public Paciente() {}
 

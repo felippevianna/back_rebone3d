@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tcc.rebone_3d.DTO.MensagemSolicitacaoDTO;
-import com.tcc.rebone_3d.DTO.SolicitacaoDTO;
+import com.tcc.rebone_3d.DTO.Mensagem.MensagemSolicitacaoDTO;
+import com.tcc.rebone_3d.DTO.Solicitacao.SolicitacaoDTO;
+import com.tcc.rebone_3d.DTO.Solicitacao.SolicitacaoDTOResponse;
 import com.tcc.rebone_3d.Models.MensagemSolicitacao;
 import com.tcc.rebone_3d.Models.Solicitacao;
 import com.tcc.rebone_3d.Models.Usuario;
@@ -49,7 +50,7 @@ public class SolicitacaoController {
         @ApiResponse(responseCode = "200", description = "Solicitação criada"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-    public ResponseEntity<Solicitacao> criarSolicitacao(@RequestBody @Parameter(description = "Dados da solicitação", required = true) SolicitacaoDTO dto) {
+    public ResponseEntity<SolicitacaoDTOResponse> criarSolicitacao(@RequestBody @Parameter(description = "Dados da solicitação", required = true) SolicitacaoDTO dto) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
@@ -63,7 +64,7 @@ public class SolicitacaoController {
         Solicitacao solicitacao = dto.toSolicitacaoModel(usuarioLogado, destinatario.get());
 
         Solicitacao novaSolicitacao = solicitacaoService.criarSolicitacao(solicitacao);
-        return ResponseEntity.ok(novaSolicitacao);
+        return ResponseEntity.ok(SolicitacaoDTOResponse.fromEntity(novaSolicitacao));
     }
 
     @GetMapping("/recebidas")
@@ -72,12 +73,16 @@ public class SolicitacaoController {
         @ApiResponse(responseCode = "200", description = "Solicitações encontradas"),
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
-    public ResponseEntity<List<Solicitacao>> listarSolicitacoesRecebidas() {
+    public ResponseEntity<List<SolicitacaoDTOResponse>> listarSolicitacoesRecebidas() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
 
         List<Solicitacao> solicitacoes = solicitacaoService.listarSolicitacoesPorDestinatario(usuarioLogado);
-        return ResponseEntity.ok(solicitacoes);
+        List<SolicitacaoDTOResponse> dtoList = solicitacoes.stream()
+        .map(SolicitacaoDTOResponse::fromEntity)
+        .toList();
+
+        return ResponseEntity.ok(dtoList);
     }
 
     @GetMapping("/{id}")
@@ -86,28 +91,28 @@ public class SolicitacaoController {
         @ApiResponse(responseCode = "200", description = "Solicitação encontrada"),
         @ApiResponse(responseCode = "404", description = "Solicitação não encontrada")
     })
-    public ResponseEntity<Solicitacao> buscarSolicitacaoPorId(
+    public ResponseEntity<SolicitacaoDTOResponse> buscarSolicitacaoPorId(
         @PathVariable @Parameter(description = "ID da solicitação") Long id) {
 
         Optional<Solicitacao> solicitacao = solicitacaoService.buscarSolicitacaoPorId(id);
-        return solicitacao.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return solicitacao.map(s -> ResponseEntity.ok(SolicitacaoDTOResponse.fromEntity(s)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/{id}/responder")
-    @Operation(summary = "Responder solicitação", description = "Adiciona uma resposta a uma solicitação existente.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Mensagem adicionada"),
-        @ApiResponse(responseCode = "400", description = "Erro ao adicionar a mensagem")
-    })
-    public ResponseEntity<MensagemSolicitacao> responderSolicitacao(@PathVariable @Parameter(description = "ID da solicitação") Long id,
-        @RequestBody @Parameter(description = "Conteúdo da resposta") MensagemSolicitacaoDTO mensagemDto) {
-        
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-        MensagemSolicitacao novaMensagem = solicitacaoService.adicionarMensagem(id, mensagemDto, usuarioLogado);
-        if (novaMensagem != null) {
-            return ResponseEntity.ok(novaMensagem);
-        }
-        return ResponseEntity.badRequest().build();
-    }
+    // TODO: talvez esse método nãop precise existir, pode deixar só no controller de mensagem
+    // @PostMapping("/{id}/responder")
+    // @Operation(summary = "Responder solicitação", description = "Adiciona uma resposta a uma solicitação existente.")
+    // @ApiResponses(value = {
+    //     @ApiResponse(responseCode = "200", description = "Mensagem adicionada"),
+    //     @ApiResponse(responseCode = "400", description = "Erro ao adicionar a mensagem")
+    // })
+    // public ResponseEntity<MensagemSolicitacao> responderSolicitacao(@RequestBody @Parameter(description = "Conteúdo da resposta") MensagemSolicitacaoDTO mensagemDto) {
+    //     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //     Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+    //     MensagemSolicitacao novaMensagem = solicitacaoService.adicionarMensagem(mensagemDto, usuarioLogado);
+    //     if (novaMensagem != null) {
+    //         return ResponseEntity.ok(novaMensagem);
+    //     }
+    //     return ResponseEntity.badRequest().build();
+    // }
 }

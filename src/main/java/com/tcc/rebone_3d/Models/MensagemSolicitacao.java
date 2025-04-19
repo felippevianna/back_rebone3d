@@ -29,7 +29,7 @@ public class MensagemSolicitacao {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     @JsonManagedReference
-    private Usuario usuario; // Quem enviou a mensagem
+    private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "solicitacao_id")

@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.tcc.rebone_3d.DTO.MensagemSolicitacaoDTO;
+import com.tcc.rebone_3d.DTO.Mensagem.MensagemSolicitacaoDTO;
 import com.tcc.rebone_3d.Models.MensagemSolicitacao;
 import com.tcc.rebone_3d.Models.Solicitacao;
 import com.tcc.rebone_3d.Models.Usuario;
@@ -34,8 +34,8 @@ public class SolicitacaoService {
         return solicitacaoRepository.findById(id);
     }
 
-    public MensagemSolicitacao adicionarMensagem(Long solicitacaoId, MensagemSolicitacaoDTO mensagemDto, Usuario usuario) {
-        Optional<Solicitacao> solicitacaoOptional = solicitacaoRepository.findById(solicitacaoId);
+    public MensagemSolicitacao adicionarMensagem(MensagemSolicitacaoDTO mensagemDto, Usuario usuario) {
+        Optional<Solicitacao> solicitacaoOptional = solicitacaoRepository.findById(mensagemDto.solicitacaoId());
         if (solicitacaoOptional.isPresent()) {
             MensagemSolicitacao mensagem = mensagemDto.toMensagemSolicitacaoModel(usuario);
             mensagem.setSolicitacao(solicitacaoOptional.get());

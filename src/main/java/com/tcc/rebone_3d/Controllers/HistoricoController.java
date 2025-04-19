@@ -29,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.tcc.rebone_3d.DTO.HistoricoDTO;
 import com.tcc.rebone_3d.Models.Historico;
-import com.tcc.rebone_3d.Models.Imagem;
+import com.tcc.rebone_3d.Models.Arquivo;
 import com.tcc.rebone_3d.Models.Paciente;
 import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Repositories.HistoricoRepository;
@@ -130,7 +130,7 @@ public class HistoricoController {
 
     @Parameter(description = "Arquivos de imagem (PNG/JPEG)", required = true,
                 content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-    @RequestPart("imagens") List<MultipartFile> imagens) {
+    @RequestPart("imagens") List<MultipartFile> arquivos) {
 
         // Validação dos campos obrigatórios
         if (historicoDto.idPaciente() == null || historicoDto.data() == null) {
@@ -157,10 +157,10 @@ public class HistoricoController {
         Historico novoHistorico = historicoRepository.save(historico);
 
         // Lista para armazenar as imagens
-        List<Imagem> imagensSalvas = new ArrayList<>();
+        List<Arquivo> arquivosSalvos = new ArrayList<>();
 
         // Processa cada imagem
-        for (MultipartFile arquivo : imagens) {
+        for (MultipartFile arquivo : arquivos) {
             if (!arquivo.isEmpty()) {
                 // Gera o nome do arquivo: ID do histórico + timestamp
                 String nomeArquivo = novoHistorico.getId() + "_" + System.currentTimeMillis() + ".png";
@@ -179,21 +179,21 @@ public class HistoricoController {
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
                 }
 
-                // Cria a entidade Imagem
-                Imagem imagem = new Imagem();
-                imagem.setCaminhoArquivo(caminhoArquivo);
-                imagem.setDataUpload(new Date());
-                imagem.setHistorico(novoHistorico);
-                imagem.setProfissional(profissional);
-                imagem.setPaciente(pacienteOptional.get());
+                // Cria a entidade Arquivo
+                Arquivo novoArquivo = new Arquivo();
+                novoArquivo.setCaminhoArquivo(caminhoArquivo);
+                novoArquivo.setDataUpload(new Date());
+                novoArquivo.setHistorico(novoHistorico);
+                novoArquivo.setProfissional(profissional);
+                novoArquivo.setPaciente(pacienteOptional.get());
 
-                // Adiciona à lista de imagens
-                imagensSalvas.add(imagem);
+                // Adiciona à lista de arquivos
+                arquivosSalvos.add(novoArquivo);
             }
         }
 
         // Vincula as imagens ao histórico
-        novoHistorico.setImagens(imagensSalvas);
+        novoHistorico.setArquivos(arquivosSalvos);
 
         // Salva o histórico atualizado
         historicoRepository.save(novoHistorico);
