@@ -29,7 +29,7 @@ public class Historico {
 
     @OneToMany(mappedBy = "historico", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    private List<Imagem> imagens; // Lista de imagens vinculadas ao histórico
+    private List<Arquivo> arquivos; // Lista de imagens vinculadas ao histórico
 
     public Historico() {}
 

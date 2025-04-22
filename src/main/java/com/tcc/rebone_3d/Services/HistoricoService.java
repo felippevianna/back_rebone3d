@@ -41,7 +41,7 @@ public class HistoricoService {
         } else {
             return new ArrayList<>();
             // TODO: criar exceções a serem lançadas para os casos de não tem permissão de alterar as informações ou não terem sido encotrados. 
-            //Exceções personaliddadas;
+            //Exceções personalizadas;
         }
     }
 

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 
@@ -44,11 +45,12 @@ public class Paciente {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     @JsonManagedReference
+    @JsonIgnore
     private Usuario usuarioResponsavel;
 
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL)
     @JsonBackReference
-    private List<Imagem> imagens;
+    private List<Arquivo> imagens;
 
     public Paciente() {}
 

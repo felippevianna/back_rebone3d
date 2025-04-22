@@ -1,4 +1,4 @@
-package com.tcc.rebone_3d.DTO;
+package com.tcc.rebone_3d.DTO.Historico;
 
 import java.util.Date;
 
