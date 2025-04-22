@@ -54,7 +54,7 @@ public class Usuario implements UserDetails{
 
     @OneToMany(mappedBy = "profissional", cascade = CascadeType.ALL)
     @JsonBackReference
-    private List<Imagem> imagens;
+    private List<Arquivo> arquivos;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

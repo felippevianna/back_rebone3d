@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.tcc.rebone_3d.Models.Imagem;
+import com.tcc.rebone_3d.Models.Arquivo;
 import com.tcc.rebone_3d.Models.Paciente;
 import com.tcc.rebone_3d.Models.Usuario;
-import com.tcc.rebone_3d.Repositories.ImagemRepository;
+import com.tcc.rebone_3d.Repositories.ArquivoRepository;
 import com.tcc.rebone_3d.Repositories.PacienteRepository;
 import com.tcc.rebone_3d.Repositories.UsuarioRepository;
 
@@ -47,10 +47,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api/imagens")
 @Tag(name = "Gerenciamento de Arquivos", description = "Endpoints para upload e consulta de arquivos médicos (imagens, documentos)")
 @SecurityRequirement(name = "bearerAuth")
-public class ImagemController {
+public class ArquivoController {
 
     @Autowired
-    private ImagemRepository imagemRepository;
+    private ArquivoRepository arquivoRepository;
 
     @Autowired
     private PacienteRepository pacienteRepository;
@@ -80,7 +80,7 @@ public class ImagemController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "500", description = "Erro no servidor")
     })
-    public ResponseEntity<Imagem> uploadImagem(@Parameter(description = "Arquivo binário", required = true) @RequestPart("arquivo") MultipartFile arquivo,        
+    public ResponseEntity<Arquivo> uploadArquivo(@Parameter(description = "Arquivo binário", required = true) @RequestPart("arquivo") MultipartFile arquivo,        
         @Parameter(description = "ID do paciente", required = true) @RequestParam("idPaciente") Long idPaciente) {
 
         // Verifica se o paciente existe
@@ -111,17 +111,17 @@ public class ImagemController {
         }
 
         // Cria a entidade Imagem
-        Imagem imagem = new Imagem();
-        imagem.setCaminhoArquivo(caminhoArquivo);
-        imagem.setDataUpload(new Date());
-        imagem.setProfissional(profissional);
-        imagem.setPaciente(pacienteOptional.get());
+        Arquivo novoArquivo = new Arquivo();
+        novoArquivo.setCaminhoArquivo(caminhoArquivo);
+        novoArquivo.setDataUpload(new Date());
+        novoArquivo.setProfissional(profissional);
+        novoArquivo.setPaciente(pacienteOptional.get());
         // Aqui você precisará buscar o agendamento pelo ID e vinculá-lo à imagem
         // imagem.setAgendamento(agendamento);
 
         // Salva a imagem no banco de dados
-        Imagem novaImagem = imagemRepository.save(imagem);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaImagem);
+        novoArquivo = arquivoRepository.save(novoArquivo);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novoArquivo);
     }
 
     // Endpoint para listar arquivos de um paciente ordenadas por data
@@ -132,11 +132,11 @@ public class ImagemController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de arquivos encontrada",
-                     content = @Content(schema = @Schema(implementation = Imagem.class))),
+                     content = @Content(schema = @Schema(implementation = Arquivo.class))),
         @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
     })
-    public ResponseEntity<List<Imagem>> listarImagensPorPaciente( @Parameter(description = "ID do paciente", required = true, example = "1") @PathVariable Long idPaciente)  {
-        List<Imagem> imagens = imagemRepository.findByPacienteIdOrderByDataUploadDesc(idPaciente);
-        return ResponseEntity.ok(imagens);
+    public ResponseEntity<List<Arquivo>> listarArquivosPorPaciente( @Parameter(description = "ID do paciente", required = true, example = "1") @PathVariable Long idPaciente)  {
+        List<Arquivo> arquivos = arquivoRepository.findByPacienteIdOrderByDataUploadDesc(idPaciente);
+        return ResponseEntity.ok(arquivos);
     }
 }
