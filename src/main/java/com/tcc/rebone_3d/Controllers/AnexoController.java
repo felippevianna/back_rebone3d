@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,21 +19,24 @@ import com.tcc.rebone_3d.Models.Solicitacao;
 import com.tcc.rebone_3d.Services.AnexoService;
 import com.tcc.rebone_3d.Services.SolicitacaoService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /* Alterar a parte de anexos para que consiga salvar os arquivos na pasta corretamente. Igual ao controller de histórico
  * A ideia é colocar todos os uploads para o firebase.
  *
  */
 @RestController
 @RequestMapping("/api/anexos")
+@Tag(name = "Anexos das solicitações", description = "Endpoints para gerenciamento dos arquivos anexados por solicitação")
+@SecurityRequirement(name = "bearerAuth")
 public class AnexoController {
 
-    private final AnexoService anexoService;
-    private final SolicitacaoService solicitacaoService;
+    @Autowired
+    private AnexoService anexoService;
 
-    public AnexoController(AnexoService anexoService, SolicitacaoService solicitacaoService) {
-        this.anexoService = anexoService;
-        this.solicitacaoService = solicitacaoService;
-    }
+    @Autowired
+    private SolicitacaoService solicitacaoService;
 
     @PostMapping("/{solicitacaoId}")
     public ResponseEntity<Anexo> uploadAnexo(@PathVariable Long solicitacaoId, @RequestParam("file") MultipartFile file) {

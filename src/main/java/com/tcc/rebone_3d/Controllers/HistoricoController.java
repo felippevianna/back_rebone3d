@@ -27,11 +27,13 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.tcc.rebone_3d.DTO.HistoricoDTO;
 import com.tcc.rebone_3d.Models.Historico;
+import com.tcc.rebone_3d.DTO.Historico.HistoricoDTO;
+import com.tcc.rebone_3d.DTO.Historico.HistoricoDTOResponse;
 import com.tcc.rebone_3d.Models.Arquivo;
 import com.tcc.rebone_3d.Models.Paciente;
 import com.tcc.rebone_3d.Models.Usuario;
+import com.tcc.rebone_3d.Repositories.ArquivoRepository;
 import com.tcc.rebone_3d.Repositories.HistoricoRepository;
 import com.tcc.rebone_3d.Repositories.PacienteRepository;
 import com.tcc.rebone_3d.Services.HistoricoService;
@@ -60,28 +62,36 @@ public class HistoricoController {
     private PacienteRepository pacienteRepository;
 
     @Autowired
+    private ArquivoRepository arquivoRepository;
+
+    @Autowired
     private HistoricoService historicoService;
 
-    // Endpoint para obter todos os históricos
-    @GetMapping
+    // Endpoint para obter todos os históricos do paciente
+    @GetMapping("/paciente/{idPaciente}")
     @Operation(
         summary = "Listar históricos",
-        description = "Retorna todos os históricos médicos de um paciente específico ou do usuário logado."
+        description = "Retorna todos os históricos médicos de um paciente específico ou do usuário logado. OBS: Sem os arquivos que foram anexados."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Históricos encontrados"),
         @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content),
         @ApiResponse(responseCode = "404", description = "Paciente não encontrado", content = @Content)
     })
-    public ResponseEntity<List<Historico>> getAllHistoricos(
-        @Parameter(description = "ID do paciente (opcional)") Long idPaciente
+    public ResponseEntity<List<HistoricoDTOResponse>> getAllHistoricos(
+        @Parameter(description = "ID do paciente (opcional)") 
+        @PathVariable Long idPaciente
     ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
 
         List<Historico> historicos = historicoService.listarTodosHistoricosDoPaciente(usuarioLogado, idPaciente);
 
-        return new ResponseEntity<>(historicos, HttpStatus.OK);
+        List<HistoricoDTOResponse> historicosDto = historicos.stream()
+            .map(HistoricoDTOResponse::fromEntity)
+            .toList();
+
+        return new ResponseEntity<>(historicosDto, HttpStatus.OK);
     }
 
     // Endpoint para obter um histórico por ID
@@ -95,14 +105,16 @@ public class HistoricoController {
         @ApiResponse(responseCode = "403", description = "Acesso negado"),
         @ApiResponse(responseCode = "404", description = "Histórico não encontrado")
     })
-    public ResponseEntity<Historico> getHistoricoById(@Parameter(description = "ID do histórico", required = true) @PathVariable Long id) {
+    public ResponseEntity<HistoricoDTOResponse> getHistoricoById(@Parameter(description = "ID do histórico", required = true) @PathVariable Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
         
-        if(!historicoService.HistoricoPodeSerAlteradoPeloUsario(id, usuarioLogado)) {
+        if(historicoService.HistoricoPodeSerAlteradoPeloUsario(id, usuarioLogado)) {
             Optional<Historico> historico = historicoRepository.findById(id);
             if (historico.isPresent()) {
-                return ResponseEntity.ok(historico.get());
+                List<Arquivo> arquivosDoHistorico = arquivoRepository.findByHistoricoId(id);
+                HistoricoDTOResponse dtoResponse = HistoricoDTOResponse.fromEntity(historico.get(), arquivosDoHistorico);
+                return ResponseEntity.ok(dtoResponse);
             } else {
                 return ResponseEntity.notFound().build();
             }
@@ -213,10 +225,10 @@ public class HistoricoController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "404", description = "Histórico ou paciente não encontrado")
     })
-    public ResponseEntity<Historico> updateHistorico(@Parameter(description = "ID do histórico", required = true) @PathVariable Long id,
+    public ResponseEntity<HistoricoDTOResponse> updateHistorico(@Parameter(description = "ID do histórico", required = true) @PathVariable Long id,
     @Parameter(description = "Dados atualizados do histórico", required = true,
                 content = @Content(schema = @Schema(implementation = Historico.class)))
-    @RequestBody Historico historicoAtualizado) {
+    @RequestBody HistoricoDTO historicoAtualizado) {
 
         Optional<Historico> historicoOptional = historicoRepository.findById(id);
 
@@ -225,12 +237,9 @@ public class HistoricoController {
         }
 
         Historico historicoExistente = historicoOptional.get();
-        historicoExistente.setDescricao(historicoAtualizado.getDescricao());
-        historicoExistente.setData(historicoAtualizado.getData());
-
         // Se o paciente for alterado, verifique se o novo paciente existe
-        if (historicoAtualizado.getPaciente() != null && historicoAtualizado.getPaciente().getId() != null) {
-            Optional<Paciente> pacienteOptional = pacienteRepository.findById(historicoAtualizado.getPaciente().getId());
+        if (historicoAtualizado.idPaciente() != null) {
+            Optional<Paciente> pacienteOptional = pacienteRepository.findById(historicoAtualizado.idPaciente());
             if (pacienteOptional.isPresent()) {
                 historicoExistente.setPaciente(pacienteOptional.get());
             } else {
@@ -238,8 +247,14 @@ public class HistoricoController {
             }
         }
 
+        historicoExistente.setDescricao(historicoAtualizado.descricao());
+        historicoExistente.setData(historicoAtualizado.data());
+
         historicoRepository.save(historicoExistente);
-        return ResponseEntity.ok(historicoExistente);
+
+        List<Arquivo> arquivosDoHistorico = arquivoRepository.findByHistoricoId(id);
+
+        return ResponseEntity.ok(HistoricoDTOResponse.fromEntity(historicoExistente, arquivosDoHistorico));
     }
 
     // Endpoint para deletar um histórico
@@ -253,6 +268,7 @@ public class HistoricoController {
         @ApiResponse(responseCode = "404", description = "Histórico não encontrado")
     })
     public ResponseEntity<Void> deleteHistorico(@Parameter(description = "ID do histórico", required = true) @PathVariable Long id)  {
+        // adicionar permissões
         if (historicoRepository.existsById(id)) {
             historicoRepository.deleteById(id);
             return ResponseEntity.noContent().build();

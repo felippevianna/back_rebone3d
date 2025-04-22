@@ -80,7 +80,7 @@ public class ArquivoController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
         @ApiResponse(responseCode = "500", description = "Erro no servidor")
     })
-    public ResponseEntity<Arquivo> uploadImagem(@Parameter(description = "Arquivo binário", required = true) @RequestPart("arquivo") MultipartFile arquivo,        
+    public ResponseEntity<Arquivo> uploadArquivo(@Parameter(description = "Arquivo binário", required = true) @RequestPart("arquivo") MultipartFile arquivo,        
         @Parameter(description = "ID do paciente", required = true) @RequestParam("idPaciente") Long idPaciente) {
 
         // Verifica se o paciente existe
@@ -135,7 +135,7 @@ public class ArquivoController {
                      content = @Content(schema = @Schema(implementation = Arquivo.class))),
         @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
     })
-    public ResponseEntity<List<Arquivo>> listarImagensPorPaciente( @Parameter(description = "ID do paciente", required = true, example = "1") @PathVariable Long idPaciente)  {
+    public ResponseEntity<List<Arquivo>> listarArquivosPorPaciente( @Parameter(description = "ID do paciente", required = true, example = "1") @PathVariable Long idPaciente)  {
         List<Arquivo> arquivos = arquivoRepository.findByPacienteIdOrderByDataUploadDesc(idPaciente);
         return ResponseEntity.ok(arquivos);
     }

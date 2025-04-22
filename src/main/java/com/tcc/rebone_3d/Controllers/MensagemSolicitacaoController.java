@@ -19,6 +19,10 @@ import com.tcc.rebone_3d.Models.Solicitacao;
 import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Services.MensagemSolicitacaoService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -33,6 +37,15 @@ public class MensagemSolicitacaoController {
 
 
     @GetMapping("/{solicitacaoId}")
+    @Operation(
+        summary = "Listar mensagens da solicitação",
+        description = "Retorna todas as mensagens enviadas entre os usuários da solicitação"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Mensagens encontrados"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Solicitação não encontrada", content = @Content)
+    })
     public ResponseEntity<List<MensagemSolicitacaoDTOResponse>> listarMensagens(@PathVariable Long solicitacaoId) {
         List<MensagemSolicitacao> mensagens = mensagemSolicitacaoService.listarMensagensPorSolicitacaoId(solicitacaoId);
 
@@ -44,6 +57,15 @@ public class MensagemSolicitacaoController {
     }
 
     @PostMapping
+    @Operation(
+        summary = "Salvar nova mensagem",
+        description = "Salva uma nova mensagem na solicitação desejada"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Mensagem Salva"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Solicitação não encontrada", content = @Content)
+    })
     public ResponseEntity<MensagemSolicitacaoDTOResponse> salvarMensagem(@RequestBody MensagemSolicitacaoDTO mensagemDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();

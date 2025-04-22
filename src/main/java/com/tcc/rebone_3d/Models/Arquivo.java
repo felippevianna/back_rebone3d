@@ -2,6 +2,7 @@ package com.tcc.rebone_3d.Models;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,14 +26,17 @@ public class Arquivo {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnore
     private Usuario profissional;  // Profissional que fez o upload
 
     @ManyToOne
     @JoinColumn(name = "historico_id")
+    @JsonIgnore
     private Historico historico; // Agendamento vinculado à imagem
 
     @ManyToOne
     @JoinColumn(name = "paciente_id")
+    @JsonIgnore
     private Paciente paciente;     // Paciente vinculado à imagem
 
     public Arquivo() {}

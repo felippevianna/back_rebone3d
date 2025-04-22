@@ -5,5 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ArquivoRepository extends JpaRepository<Arquivo, Long> {
-    List<Arquivo> findByPacienteIdOrderByDataUploadDesc(Long pacienteId); // Busca imagens de um paciente ordenadas por data
+    List<Arquivo> findByPacienteIdOrderByDataUploadDesc(Long pacienteId); // Busca arquivos de um paciente ordenadas por data
+
+    List<Arquivo> findByHistoricoId(Long historicoId); // Busca arquivos de um historico
 }
