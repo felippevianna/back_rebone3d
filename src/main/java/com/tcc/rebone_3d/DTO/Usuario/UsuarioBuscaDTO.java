@@ -1,14 +1,14 @@
-package com.tcc.rebone_3d.DTO;
+package com.tcc.rebone_3d.DTO.Usuario;
 
 import com.tcc.rebone_3d.Models.Enum.Perfil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(
-    name = "UserInfoDTO",
+    name = "UsuarioBuscaDTO",
     description = "DTO contendo informações básicas do usuário para resposta da API"
 )
-public record UserInfoDTO(
+public record UsuarioBuscaDTO(
     @Schema(
         description = "Nome de usuário único no sistema",
         example = "dr.carlos.souza",
@@ -17,11 +17,9 @@ public record UserInfoDTO(
     String username,
 
     @Schema(
-        description = "Perfil de acesso do usuário",
-        implementation = Perfil.class,
+        description = "ID do usuário",
         requiredMode = Schema.RequiredMode.REQUIRED,
-        example = "DENTISTA",
-        allowableValues = {"ADMIN", "DENTISTA", "PROTETICO"}
+        example = "1"
     )
-    Perfil perfil
+    Long id
 ) {}

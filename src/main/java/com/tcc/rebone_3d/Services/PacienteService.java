@@ -2,13 +2,15 @@ package com.tcc.rebone_3d.Services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.tcc.rebone_3d.DTO.PacienteDTO;
+import com.tcc.rebone_3d.DTO.Paciente.PacienteDTO;
+import com.tcc.rebone_3d.DTO.Paciente.PacienteBuscaDTO;
 import com.tcc.rebone_3d.Models.Paciente;
 import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Repositories.PacienteRepository;
@@ -72,5 +74,16 @@ public class PacienteService {
             return true;
         }
     }
+    
+    public List<PacienteBuscaDTO> buscarPorNomeEUsuario(String nome, Usuario usuario) {
+        List<Paciente> listaPacientes = pacienteRepository.findByNomeContainingIgnoreCaseAndUsuarioResponsavel(nome, usuario);
+
+        List<PacienteBuscaDTO> listaDTOPacientes = listaPacientes.stream()
+        .map(p -> new PacienteBuscaDTO(p.getId(), p.getNome()))
+        .toList();
+        
+        return listaDTOPacientes;
+    }
+    
 }
 
