@@ -79,7 +79,7 @@ public class PacienteService {
         List<Paciente> listaPacientes = pacienteRepository.findByNomeContainingIgnoreCaseAndUsuarioResponsavel(nome, usuario);
 
         List<PacienteBuscaDTO> listaDTOPacientes = listaPacientes.stream()
-        .map(p -> new PacienteBuscaDTO(p.getId(), p.getNome()))
+        .map(p -> new PacienteBuscaDTO(p.getId(), p.getNome(), p.getEmail(), p.getTelefone()))
         .toList();
         
         return listaDTOPacientes;
