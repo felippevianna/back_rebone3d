@@ -109,13 +109,9 @@ public class PacienteController {
                      content = @Content(schema = @Schema(implementation = Paciente.class))),
         @ApiResponse(responseCode = "404", description = "Paciente não encontrado")
     })
-    public ResponseEntity<Paciente> editar(@PathVariable Long id, @RequestBody Paciente pacienteAtualizado) {
-        try {
-            Paciente pacienteEditado = pacienteService.editar(id, pacienteAtualizado);
-            return new ResponseEntity<>(pacienteEditado, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Paciente> editar(@PathVariable Long id, @RequestBody PacienteDTO pacienteAtualizado) {
+        Paciente pacienteEditado = pacienteService.editar(id, pacienteAtualizado);
+        return ResponseEntity.ok(pacienteEditado);
     }
 
     // Deletar paciente

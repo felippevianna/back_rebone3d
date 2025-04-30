@@ -5,9 +5,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.tcc.rebone_3d.DTO.Paciente.PacienteDTO;
 import com.tcc.rebone_3d.DTO.Paciente.PacienteBuscaDTO;
@@ -44,21 +46,31 @@ public class PacienteService {
     }
 
     // Editar dados do paciente existente
-    public Paciente editar(Long id, Paciente pacienteAtualizado) {
-        return pacienteRepository.findById(id).map(paciente -> {
-            paciente.setNome(pacienteAtualizado.getNome());
-            paciente.setEmail(pacienteAtualizado.getEmail());
-            paciente.setCpf(pacienteAtualizado.getCpf());
-            paciente.setTelefone(pacienteAtualizado.getTelefone());
-            paciente.setDataNascimento(pacienteAtualizado.getDataNascimento());
-            paciente.setUf(pacienteAtualizado.getUf());
-            paciente.setCidade(pacienteAtualizado.getCidade());
-            paciente.setCep(pacienteAtualizado.getCep());
-            paciente.setRua(pacienteAtualizado.getRua());
-            paciente.setNumero(pacienteAtualizado.getNumero());
-            paciente.setBairro(pacienteAtualizado.getBairro());
-            return pacienteRepository.save(paciente);
-        }).orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+    public Paciente editar(Long id, PacienteDTO pacienteAtualizado) {
+        Optional<Paciente> pacienteExistente = pacienteRepository.findById(id);
+        String teste = pacienteAtualizado.nome();
+        
+        if (pacienteExistente.isPresent()){
+            Paciente paciente = pacienteExistente.get();
+            paciente.setNome(pacienteAtualizado.nome());
+            paciente.setEmail(pacienteAtualizado.email());
+            paciente.setCpf(pacienteAtualizado.cpf());
+            paciente.setTelefone(pacienteAtualizado.telefone());
+            paciente.setDataNascimento(pacienteAtualizado.dataNascimento());
+            paciente.setUf(pacienteAtualizado.uf());
+            paciente.setCidade(pacienteAtualizado.cidade());
+            paciente.setCep(pacienteAtualizado.cep());
+            paciente.setRua(pacienteAtualizado.rua());
+            paciente.setNumero(pacienteAtualizado.numero());
+            paciente.setBairro(pacienteAtualizado.bairro());
+
+            pacienteRepository.save(paciente);
+
+            return paciente;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado");
+        }
+        
     }
 
     // Deletar paciente
