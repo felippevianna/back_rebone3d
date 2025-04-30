@@ -1,4 +1,4 @@
-package com.tcc.rebone_3d.DTO;
+package com.tcc.rebone_3d.DTO.Paciente;
 
 import java.util.Date;
 
