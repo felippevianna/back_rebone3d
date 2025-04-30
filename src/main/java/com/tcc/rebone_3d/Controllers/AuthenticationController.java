@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tcc.rebone_3d.DTO.AuthenticationDTO;
 import com.tcc.rebone_3d.DTO.LoginResponseDTO;
 import com.tcc.rebone_3d.DTO.RegisterDTO;
-import com.tcc.rebone_3d.DTO.UserInfoDTO;
+import com.tcc.rebone_3d.DTO.Usuario.UsuarioInfoDTO;
 import com.tcc.rebone_3d.Models.Usuario;
 import com.tcc.rebone_3d.Repositories.UsuarioRepository;
 import com.tcc.rebone_3d.Security.TokenService;
@@ -71,12 +71,12 @@ public class AuthenticationController {
     // Novo endpoint para obter informações do usuário
     @GetMapping("/user-info")
     @Operation(summary = "Obter informações do usuário logado", description = "Retorna as informações adicionais do usuário logado - ainda não está finalizada")
-    public ResponseEntity<UserInfoDTO> userInfo(Authentication authentication) {
+    public ResponseEntity<UsuarioInfoDTO> userInfo(Authentication authentication) {
         // Obtém o usuário autenticado a partir do contexto de segurança
         Usuario usuario = (Usuario) authentication.getPrincipal();
 
         // Cria um DTO com as informações do usuário
-        UserInfoDTO userInfo = new UserInfoDTO(usuario.getUsername(), usuario.getPerfil());
+        UsuarioInfoDTO userInfo = new UsuarioInfoDTO(usuario.getUsername(), usuario.getPerfil());
 
         return ResponseEntity.ok(userInfo);
     }
