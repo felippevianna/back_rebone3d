@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // Permite CORS para todas as rotas sob /api
-                        .allowedOrigins("http://localhost:3000") // Permite requisições do frontend
+                        .allowedOrigins("http://localhost:3000", "https://reboned3d.netlify.app") // Permite requisições do frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos permitidos
                         .allowedHeaders("*") // Headers permitidos
                         .allowCredentials(true); // Permite credenciais (cookies, tokens)
