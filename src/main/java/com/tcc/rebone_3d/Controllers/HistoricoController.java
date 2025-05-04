@@ -112,8 +112,7 @@ public class HistoricoController {
         if(historicoService.HistoricoPodeSerAlteradoPeloUsario(id, usuarioLogado)) {
             Optional<Historico> historico = historicoRepository.findById(id);
             if (historico.isPresent()) {
-                List<Arquivo> arquivosDoHistorico = arquivoRepository.findByHistoricoId(id);
-                HistoricoDTOResponse dtoResponse = HistoricoDTOResponse.fromEntity(historico.get(), arquivosDoHistorico);
+                HistoricoDTOResponse dtoResponse = HistoricoDTOResponse.fromEntity(historico.get());
                 return ResponseEntity.ok(dtoResponse);
             } else {
                 return ResponseEntity.notFound().build();
@@ -140,7 +139,7 @@ public class HistoricoController {
                 content = @Content(schema = @Schema(implementation = HistoricoDTO.class)))
     @RequestPart("historico") HistoricoDTO historicoDto,
 
-    @Parameter(description = "Arquivos de imagem (PNG/JPEG)", required = true,
+    @Parameter(description = "Arquivos", required = true,
                 content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
     @RequestPart("imagens") List<MultipartFile> arquivos) {
 
@@ -175,7 +174,9 @@ public class HistoricoController {
         for (MultipartFile arquivo : arquivos) {
             if (!arquivo.isEmpty()) {
                 // Gera o nome do arquivo: ID do histórico + timestamp
-                String nomeArquivo = novoHistorico.getId() + "_" + System.currentTimeMillis() + ".png";
+                String originalFilename = arquivo.getOriginalFilename();
+                String extensao = originalFilename.substring(originalFilename.lastIndexOf("."));
+                String nomeArquivo = novoHistorico.getId() + "_" + System.currentTimeMillis() + extensao;
 
                 // Define o caminho da pasta: uploads/{idPaciente}/
                 String caminhoPasta = UPLOAD_DIR + historicoDto.idPaciente() + "/";

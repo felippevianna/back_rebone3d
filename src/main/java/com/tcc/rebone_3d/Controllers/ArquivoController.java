@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,7 +46,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 // Alterar o nome desse controller, para 'Arquivos'
 
 @RestController
-@RequestMapping("/api/imagens")
+@RequestMapping("/api/arquivos")
 @Tag(name = "Gerenciamento de Arquivos", description = "Endpoints para upload e consulta de arquivos médicos (imagens, documentos)")
 @SecurityRequirement(name = "bearerAuth")
 public class ArquivoController {
@@ -94,7 +96,9 @@ public class ArquivoController {
         Usuario profissional = (Usuario) authentication.getPrincipal();
 
         // Gera o nome do arquivo: ID do paciente + timestamp
-        String nomeArquivo = idPaciente + "_" + System.currentTimeMillis() + ".png";
+        String originalFilename = arquivo.getOriginalFilename();
+        String extensao = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String nomeArquivo = idPaciente + "_" + System.currentTimeMillis() + extensao;
 
         // Define o caminho da pasta: uploads/{idPaciente}/
         String caminhoPasta = UPLOAD_DIR + idPaciente + "/";
@@ -139,4 +143,61 @@ public class ArquivoController {
         List<Arquivo> arquivos = arquivoRepository.findByPacienteIdOrderByDataUploadDesc(idPaciente);
         return ResponseEntity.ok(arquivos);
     }
+
+    @GetMapping("/download/{idArquivo}")
+    @CrossOrigin(exposedHeaders = "Content-Disposition") // ← ADICIONE ESTA LINHA
+    @Operation(
+        summary = "Download de arquivo protegido",
+        description = "Permite o download de um arquivo apenas pelo profissional que realizou o upload ou que tem acesso ao paciente"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Arquivo retornado com sucesso"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado"),
+        @ApiResponse(responseCode = "404", description = "Arquivo não encontrado"),
+        @ApiResponse(responseCode = "500", description = "Erro ao ler o arquivo")
+    })
+    public ResponseEntity<byte[]> downloadArquivo(
+        @Parameter(description = "ID do arquivo", required = true)
+        @PathVariable Long idArquivo
+    ) {
+        Optional<Arquivo> arquivoOptional = arquivoRepository.findById(idArquivo);
+        if (arquivoOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        Arquivo arquivo = arquivoOptional.get();
+
+        // Usuário logado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+
+        // Verifica se é o profissional que fez o upload
+        boolean autorizado = arquivo.getProfissional().getId().equals(usuarioLogado.getId());
+
+        if (!autorizado) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Caminho do arquivo
+        Path caminho = Paths.get(arquivo.getCaminhoArquivo());
+        if (!Files.exists(caminho)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        try {
+            byte[] conteudo = Files.readAllBytes(caminho);
+            String nomeArquivo = caminho.getFileName().toString();
+
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nomeArquivo + "\"")
+                .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION) // ← E ESTA
+                .body(conteudo);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

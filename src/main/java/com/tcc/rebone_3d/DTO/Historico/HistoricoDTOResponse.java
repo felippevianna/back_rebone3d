@@ -3,6 +3,7 @@ package com.tcc.rebone_3d.DTO.Historico;
 import java.util.Date;
 import java.util.List;
 
+import com.tcc.rebone_3d.DTO.ArquivoDTOResponse;
 import com.tcc.rebone_3d.Models.Arquivo;
 import com.tcc.rebone_3d.Models.Historico;
 
@@ -44,25 +45,33 @@ public record HistoricoDTOResponse(
         description = "Lista de arquivos do historico",
         requiredMode = Schema.RequiredMode.NOT_REQUIRED
     )
-    List<Arquivo> arquivosDoHistorico
+    List<ArquivoDTOResponse> arquivosDoHistorico
 ) {
-    public static HistoricoDTOResponse fromEntity(Historico historico, List<Arquivo> arquivosDoHistorico) {
-           return new HistoricoDTOResponse (
+    public static HistoricoDTOResponse fromEntity(Historico historico, List<Arquivo> arquivos) {
+        List<ArquivoDTOResponse> arquivosDto = arquivos != null
+            ? arquivos.stream().map(ArquivoDTOResponse::fromEntity).toList()
+            : null;
+    
+        return new HistoricoDTOResponse(
             historico.getId(),
             historico.getPaciente().getId(),
             historico.getData(),
             historico.getDescricao(),
-            arquivosDoHistorico
+            arquivosDto
         );
     }
 
     public static HistoricoDTOResponse fromEntity(Historico historico) {
+        List<ArquivoDTOResponse> arquivosDTO = historico.getArquivos() != null 
+            ? historico.getArquivos().stream().map(ArquivoDTOResponse::fromEntity).toList()
+            : null;
+        
         return new HistoricoDTOResponse (
          historico.getId(),
          historico.getPaciente().getId(),
          historico.getData(),
          historico.getDescricao(),
-         null
+         arquivosDTO
      );
  }
 
