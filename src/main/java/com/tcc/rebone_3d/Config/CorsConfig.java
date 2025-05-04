@@ -17,6 +17,7 @@ public class CorsConfig {
                         .allowedOrigins("http://localhost:3000", "https://reboned3d.netlify.app") // Permite requisições do frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos permitidos
                         .allowedHeaders("*") // Headers permitidos
+                        .exposedHeaders("Content-Disposition") // <-- Adicione esta linha
                         .allowCredentials(true); // Permite credenciais (cookies, tokens)
             }
         };
